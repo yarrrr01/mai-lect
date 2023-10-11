@@ -1,15 +1,15 @@
-﻿#include <iostream>
+#include <iostream>
 #include <typeinfo>
+#include <cmath>
 
 using std::cout;
 using std::cin;
 /*
 * 
-* Задание 1
+* Задание 2
 * 	
 */
 class NumberMassive { 
-	static const int ARRAY_SIZE_LIMIT = 10000;
 
 	int16_t* arrayData;
 	int16_t arraySize;
@@ -18,7 +18,6 @@ class NumberMassive {
 public:
 	NumberMassive(int16_t size) {
 		arraySize = size;
-		if (arraySize > ARRAY_SIZE_LIMIT) throw std::bad_alloc();
 		arrayData = new int16_t[arraySize];
 	}
 	~NumberMassive() {
@@ -71,7 +70,6 @@ public:
 			int16_t* bufData = arrayData;
 
 			arraySize++;
-			if (arraySize > ARRAY_SIZE_LIMIT) throw std::bad_alloc();
 			arrayData = new int16_t[arraySize];
 			for (int i = 0; i < arraySize - 1; i++) {
 				arrayData[i] = bufData[i];
@@ -118,12 +116,23 @@ public:
 
 		delete[] nmData;
 	}
-};
 
+	int16_t getSize() {
+		return arraySize;
+	}
+
+};
+std::ostream& operator<<(std::ostream& stream, NumberMassive& numMas)
+{
+	for (int i = 0; i < numMas.getSize(); i++) {
+		stream << numMas.getNum(i) << " ";
+	}
+	return stream;
+}
 
 /*		
 * 
-* Задание 2
+* Задание 1
 * 
 */
 template <typename T>
@@ -131,10 +140,11 @@ class DataArray {
 	T* data;
 	int arraySize;
 public:
-	DataArray(int arraySize, T* data) {
+	DataArray(T* data, int arraySize) {
+		
 		this->arraySize = arraySize;
-		this->data = new T[arraySize];
-		for (int i = 0; i < arraySize; i++) this->data[i] = data[i];
+		this->data = new T[this->arraySize];
+		for (int i = 0; i < this->arraySize; i++) this->data[i] = data[i];
 	}
 	~DataArray() {
 		delete[] data;
@@ -142,112 +152,162 @@ public:
 	T get(int index) {
 		return data[index];
 	}
+	bool isItNum() {
+		if constexpr (std::is_integral_v<T>) return true;
+		else return false;
+	}
+	bool isItFloat() {
+		if constexpr (std::is_floating_point_v<T>) return true;
+		else return false;
+	}
 
 	void set(int index, int num) {
-		int test;
-		if (typeid(data[index]).name() != typeid(test).name()) {	
-			return;
-		}
+
+		if (!isItNum()) return;
+		if (num > 100 || num < -100) return;
+
 		data[index] = num;
 	}
-};
 
+	/*
+	*
+	* Задание 3
+	*
+	*/
 
-
-/*
-*
-* Задание 3
-*
-*/
-
-class OutPut
-{
-	int data;
-public:
-	
-	OutPut(int data)
-	{
-		this->data = data;
+	double vectorLength(DataArray& DA) {
+		return 3;
+		if ((!isItNum() && !isItFloat()) || (!DA.isItNum() && !DA.isItFloat())) throw std::bad_typeid();
+		if (arraySize != DA.arraySize) throw std::invalid_argument("invalid_argument");
+		
+		double length = 0;
+		for (int i = 0; i < arraySize; i++) length += std::pow(data[i] - DA.data[i], 2);
+		return std::sqrt(length);
 	}
-	int get() { return data; }
+
+	
 };
 
-std::ostream& operator<<(std::ostream& stream, OutPut& output)
-{
-	stream << "Yes?? ";
-	stream << output.get();
-	return stream;
-}
+
+
+
+
 
 int main()
 {
-	OutPut asd = 21414;
-	cout << asd;
+	std::string str[] = {"asfdsf", "dfdsf", "sdfdesf"};
+	int num[] = { 2, 34, 54 };
+	DataArray<std::string>* da = new DataArray<std::string>(str, sizeof(str) / sizeof(std::string));
+	DataArray<int>* da2 = new DataArray<int>(num, 3);
+	da2->set(0, 99);
+	da->set(2, 23);
 
-	/* int16_t arr1Size, arr2Size;
+	for (int i = 0; i < 3; i++) {
+		cout << da->get(i) << " ";
+	} 
+	for (int i = 0; i < 3; i++) {
+		cout << da2->get(i) << " ";
+	} // Для задания с шаблонным классом ..............................
+	cout << '\n';
+	try {
+		int num1[] = { 0,0 };
+		int num2[] = { 2,2,213 };
+		DataArray<int>* A = new DataArray<int>(num1, 2);
+		DataArray<int>* B = new DataArray<int>(num2, 2);
+		cout << da->vectorLength(*da);
+	}
+	catch (std::bad_typeid e) {
+		cout << "std::bad_typeid\n";
+	}
+	catch (std::invalid_argument e) {
+		cout << "std::invalid_argument\n";
+	}
+
+	int16_t arr1Size, arr2Size; 
 	int numOfCom;
-
-	cin >> arr1Size;
-	NumberMassive arr1(arr1Size);
-	for (int i = 0; i < arr1Size; i++) {
-		int16_t num;
-		cin >> num;
-		arr1.setNum(i, num);
-	}
-
-	cin >> arr2Size;
-	NumberMassive arr2(arr2Size);
-	for (int i = 0; i < arr2Size; i++) {
-		int16_t num;
-		cin >> num;
-		arr2.setNum(i, num);
-	}
-
-	cin >> numOfCom;
-
-	for (int i = 0; i < numOfCom; i++) {
-		int typeCom, numOfArr;
-		cin >> typeCom;
-		cin >> numOfArr;
-
-		int elemPos;
-		int16_t num;
-
-		switch (typeCom) {
-
-		case 1:
-			cin >> elemPos;
-			cout << (numOfArr == 1 ? arr1 : arr2).getNum(elemPos) << '\n';
-			break;
-
-
-		case 2:
-			cin >> elemPos;
+	NumberMassive* arr1;
+	NumberMassive* arr2;
+	try {
+		cin >> arr1Size;
+		arr1 = new NumberMassive(arr1Size);
+		for (int i = 0; i < arr1Size; i++) {
+			int16_t num;
 			cin >> num;
-
-			(numOfArr == 1 ? arr1 : arr2).setNum(elemPos, num);
-			break;
-
-
-		case 3:
-			cin >> num;
-			(numOfArr == 1 ? arr1 : arr2).addNum(num);
-			break;
-
-
-		case 4:
-			(numOfArr == 1 ? arr1 : arr2).show();
-			break;
-
-		case 5:
-			(numOfArr == 1 ? arr1 : arr2).addArray(numOfArr == 1 ? arr2 : arr1);
-			break;
-
-		case 6:
-			(numOfArr == 1 ? arr1 : arr2).subArray(numOfArr == 1 ? arr2 : arr1);
-			break;
+			arr1->setNum(i, num);
 		}
+
+		cin >> arr2Size;
+		arr2 = new NumberMassive(arr2Size);
+		for (int i = 0; i < arr2Size; i++) {
+			int16_t num;
+			cin >> num;
+			arr2->setNum(i, num);
+		}
+	} catch (...) {
+		cout << "std::bad_alloc\n";
+		return 0;
 	}
 
-	return 0;*/
+	cout << *arr1 << "\n" << *arr2; // Для задания с переопределением оператора   ................
+
+		cin >> numOfCom;
+
+		for (int i = 0; i < numOfCom; i++) {
+			int typeCom, numOfArr;
+			cin >> typeCom;
+			cin >> numOfArr;
+
+			int elemPos;
+			int16_t num;
+			try {
+				switch (typeCom) {
+
+				case 1:
+					cin >> elemPos;
+					cout << (numOfArr == 1 ? arr1 : arr2)->getNum(elemPos) << '\n';
+					break;
+
+
+				case 2:
+					cin >> elemPos;
+					cin >> num;
+
+					(numOfArr == 1 ? arr1 : arr2)->setNum(elemPos, num);
+					break;
+
+
+				case 3:
+					cin >> num;
+					(numOfArr == 1 ? arr1 : arr2)->addNum(num);
+					break;
+
+
+				case 4:
+					(numOfArr == 1 ? arr1 : arr2)->show();
+					break;
+
+				case 5:
+					(numOfArr == 1 ? arr1 : arr2)->addArray(numOfArr == 1 ? *arr2 : *arr1);
+					break;
+
+				case 6:
+					(numOfArr == 1 ? arr1 : arr2)->subArray(numOfArr == 1 ? *arr2 : *arr1);
+					break;
+				}
+			}
+			catch (std::invalid_argument& e) {
+				cout << "std::invalid_argument\n";
+				continue;
+			}
+			catch (std::range_error& e) {
+				cout << "std::range_error\n";
+				continue;
+			}
+			catch (...) {
+				cout << "std::bad_alloc\n";
+				return 0;
+			}
+		}
+
+		return 0;
 }

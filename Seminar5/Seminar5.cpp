@@ -147,7 +147,7 @@ int main() {
 	
 
 	// Обработка команд пользователя
-	cHelp();
+	//cHelp();
 	int com, numOfCom;
 	cin >> numOfCom;
 	vector<Circuit> filtCir;

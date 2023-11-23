@@ -27,8 +27,8 @@ public:
 
 	void show() { 
 		accessСount++;
-
-		cout << id << "  " << accessСount << "  ";
+		for (int i = 0; i < id; i++) cout << numOfRequests[i] << " ";
+		cout << "... " << accessСount << " ... ";
 		for (int i = 0; i < id; i++) cout << data[i] << " ";
 	}
 
